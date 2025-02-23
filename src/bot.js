@@ -289,11 +289,13 @@ client.on(Events.MessageCreate, async message => {
 
 		// fetch info about the model like the template and system message
 		if (modelInfo == null) {
-			modelInfo = (await makeRequest("/api/show", "post", {
-				name: model
-			}));
-			if (typeof modelInfo === "string") modelInfo = JSON.parse(modelInfo);
-			if (typeof modelInfo !== "object") throw "failed to fetch model information";
+			const tagsResponse = await makeRequest("api/tags", "get");
+			const models = JSON.parse(tagsResponse);
+			modelInfo = models.models.find(m => m.name === model);
+			
+			if (!modelInfo) {
+				throw new Error(`Model ${model} not found`);
+			}
 		}
 
 		const systemMessages = [];
